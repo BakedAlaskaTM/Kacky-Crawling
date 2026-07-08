@@ -1,6 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.chrome.service import Service
 import re
 import json
 import os
@@ -25,12 +25,17 @@ def write_json(filename: str, data):
         json.dump(data, json_file, indent=4, ensure_ascii=True)
 
 def scrape():
-    options = Options()
+    options = webdriver.ChromeOptions()
     options.page_load_strategy = "normal"
-
     options.add_argument("--headless=new") 
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+
+    # Explicitly initialize the Chrome Service
+    service = Service() 
+    
+    # Pass both the service and the options
+    driver = webdriver.Chrome(service=service, options=options)
 
     map_recs = []
     players = []
