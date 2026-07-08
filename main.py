@@ -42,8 +42,6 @@ def scrape():
     map_recs = []
     players = []
 
-    driver = webdriver.Chrome(options=options)
-
     maps = read_json("map_info.json")
     seen_players = set()
     for map in maps:
@@ -56,7 +54,7 @@ def scrape():
                 break
             T.sleep(0.5)
             retries += 1
-
+        print(f"Map {map['number']} loaded")
         for row in rows:
             cells = row.find_elements(By.TAG_NAME, "td")
             if len(cells) >= 3:
