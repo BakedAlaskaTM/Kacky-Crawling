@@ -29,11 +29,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install selenium supabase postgrest python-dotenv
 
-    # 4. Install Chrome and ChromeDriver automatically on Ubuntu
-    - name: Setup Chrome/ChromeDriver
-      uses: browser-actions/setup-chrome@v1
+    # 4. Set up Firefox for Selenium
+    - name: Setup Firefox
+      uses: browser-actions/setup-firefox@v1
       with:
-        chrome-version: stable
+        firefox-version: latest
 
     # 5. Run the script with injected GitHub Secrets
     - name: Run Scraper Script
