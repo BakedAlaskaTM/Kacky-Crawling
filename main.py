@@ -129,7 +129,7 @@ def update_players(player_data):
 
 def update_recs(recs_data):
     try:
-        supabase.table('Records').upsert(recs_data, on_conflict=['rank', 'map_id']).execute()
+        supabase.table('Records').upsert(recs_data, on_conflict='rank,map_id').execute()
     except APIError as e:
         print(f"Error Code: {e.code}")        # e.g., '42501' (Postgres error code)
         print(f"Message: {e.message}")
