@@ -54,7 +54,6 @@ def scrape():
                 break
             T.sleep(0.5)
             retries += 1
-        print(f"Map {map['number']} loaded")
         for row in rows:
             cells = row.find_elements(By.TAG_NAME, "td")
             if len(cells) >= 3:
