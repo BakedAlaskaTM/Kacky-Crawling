@@ -1,0 +1,15 @@
+name: schedule_workflow
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every single day
+    - cron: '0 2 * * *'
+
+jobs:
+  schedule_workflow:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Check out your code repository
+    - name: Checkout Repository
+      uses: actions/checkout@v4
