@@ -3,7 +3,7 @@ name: Kacky Scraper and Sync
 on:
   schedule:
     # Runs at 00:00 UTC every single day
-    - cron: '0 2 * * *'
+    - cron: '0 12 * * *'
   workflow_dispatch:
     # Allows you to manually click a "Run workflow" button in GitHub
 
