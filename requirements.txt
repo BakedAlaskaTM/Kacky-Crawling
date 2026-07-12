@@ -1,0 +1,5 @@
+selenium
+supabase
+postgrest
+python-dotenv
+pandas
