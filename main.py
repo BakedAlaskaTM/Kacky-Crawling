@@ -198,10 +198,10 @@ if __name__ == "__main__":
 
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
     print("Starting scraper...")
-    scrape()
+    #scrape()
     print("Scraping completed. Now updating the database...")
-    update_players(read_json("players.json"))
-    update_recs(read_json("map_recs.json"))
+    #update_players(read_json("players.json"))
+    #update_recs(read_json("map_recs.json"))
     print("Database update completed.")
     print("Exporting to CSV")
     export_csv()
