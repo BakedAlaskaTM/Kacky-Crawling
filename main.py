@@ -101,6 +101,15 @@ def insert_map_data(map_data):
         print(f"Error Code: {e.code}")        # e.g., '42501' (Postgres error code)
         print(f"Message: {e.message}")
 
+def update_map_data(map_data):
+    # Update the player data in the 'Players' table
+    try:
+        supabase.table('Maps').upsert(map_data, on_conflict='uid').execute()
+    except APIError as e:
+        # This is how you access the actual HTTP status code and message!
+        print(f"Error Code: {e.code}")        # e.g., '42501' (Postgres error code)
+        print(f"Message: {e.message}")
+
 def insert_player_data(player_data):
     # Insert the player data into the 'Players' table
     try:
@@ -206,3 +215,4 @@ if __name__ == "__main__":
     print("Exporting to CSV")
     export_csv()
     print("Export completed.")
+
