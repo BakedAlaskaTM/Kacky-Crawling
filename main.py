@@ -303,8 +303,8 @@ if __name__ == "__main__":
     SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") # Use service role if bypasses RLS is needed for backend
 
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-    print("Starting scraper...")
-    scrape()
+    #print("Starting scraper...")
+    #scrape()
     print("Scraping completed. Now updating the database...")
     update_players(read_json("players.json"))
     update_recs(read_json("map_recs.json"))
