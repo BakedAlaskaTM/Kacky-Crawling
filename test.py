@@ -11,13 +11,18 @@ from supabase import create_client, Client
 from dotenv import load_dotenv
 import pandas as pd
 
+SAMPLES = 2
 MAX_RECS = 50
+
 
 def parse_time(time_str):
     if ":" not in time_str:
         return None
     m, s = time_str.split(":")
     return int(60000*int(m)+1000*float(s))
+
+def format_time(ms):
+    return f"{ms // 60000}:{(ms % 60000) / 1000:.2f}"
 
 def read_json(filename):
     try:
@@ -147,14 +152,13 @@ def get_player_recs(driver, pid, records_dict):
                 records_dict[f"{map_id}+{pid}"]["rank"] = rank
             except KeyError:
                 pass
-
 def scrape():
     print("Starting...")
     options = FirefoxOptions()
     options.page_load_strategy = "normal"
     
     # Headless mode args for Firefox
-    options.add_argument("--headless") 
+    #options.add_argument("--headless") 
     map_recs = []
     players = {}
     filtered_players = []
@@ -167,9 +171,13 @@ def scrape():
 
     maps = read_json("map_info.json")
 
+    n = 0
     print("Crawling...")
     for map in maps:
+        if n >= SAMPLES:
+            break
         get_map_data(driver, map["uid"], players, recheck_players, records_dict)
+        n += 1
 
     print("Maps done, onto players")
 
@@ -177,7 +185,6 @@ def scrape():
         get_player_recs(driver, pid, records_dict)
 
     driver.quit()
-
     seen_pids = set()
     for rec in records_dict.values():
         if rec["rank"] <= 10:
@@ -185,131 +192,10 @@ def scrape():
             if rec["player_id"] not in seen_pids:
                 filtered_players.append(players[rec["player_id"]])
                 seen_pids.add(rec["player_id"])
-    write_json("map_recs.json", map_recs)
-    write_json("players.json", filtered_players)
+    write_json("recs_sample.json", map_recs)
+    write_json("players_sample.json", filtered_players)
     print("Done")
 
-def insert_map_data(map_data):
-    # Insert the map data into the 'Maps' table
-    try:
-        supabase.table('Maps').insert(map_data).execute()
-    except APIError as e:
-        # This is how you access the actual HTTP status code and message!
-        print(f"Error Code: {e.code}")        # e.g., '42501' (Postgres error code)
-        print(f"Message: {e.message}")
-
-def update_map_data(map_data):
-    # Update the player data in the 'Players' table
-    try:
-        supabase.table('Maps').upsert(map_data, on_conflict='uid').execute()
-    except APIError as e:
-        # This is how you access the actual HTTP status code and message!
-        print(f"Error Code: {e.code}")        # e.g., '42501' (Postgres error code)
-        print(f"Message: {e.message}")
-
-def insert_player_data(player_data):
-    # Insert the player data into the 'Players' table
-    try:
-        supabase.table('Players').insert(player_data).execute()
-    except APIError as e:
-        # This is how you access the actual HTTP status code and message!
-        print(f"Error Code: {e.code}")        # e.g., '42501' (Postgres error code)
-        print(f"Message: {e.message}")
-
-def insert_records_data(recs_data):
-    # Insert the records data into the 'Records' table
-    try:
-        supabase.table('Records').insert(recs_data).execute()
-    except APIError as e:
-        # This is how you access the actual HTTP status code and message!
-        print(f"Error Code: {e.code}")        # e.g., '42501' (Postgres error code)
-        print(f"Message: {e.message}")
-
-def update_players(player_data):
-    # Update the player data in the 'Players' table
-    try:
-        supabase.table('Players').upsert(player_data, on_conflict='pid').execute()
-    except APIError as e:
-        # This is how you access the actual HTTP status code and message!
-        print(f"Error Code: {e.code}")        # e.g., '42501' (Postgres error code)
-        print(f"Message: {e.message}")
-
-def update_recs(recs_data):
-    try:
-        supabase.table('Records').upsert(recs_data, on_conflict='rank,map_id').execute()
-    except APIError as e:
-        print(f"Error Code: {e.code}")        # e.g., '42501' (Postgres error code)
-        print(f"Message: {e.message}")
-
-def GET(table_name, columns='*'):
-    """
-    Fetches all rows from a Supabase table, automatically paginating 
-    in chunks of 1,000 rows until the entire table is retrieved.
-    """
-    all_data = []
-    chunk_size = 1000
-    start_index = 0
-    
-    print(f"Starting bulk fetch from table: '{table_name}'...")
-    
-    while True:
-        end_index = start_index + chunk_size - 1
-        
-        try:
-            # Request a specific slice of rows (e.g., 0-999, 1000-1999)
-            response = (
-                supabase.table(table_name)
-                .select(columns)
-                .range(start_index, end_index)
-                .execute()
-            )
-            
-            chunk_data = response.data
-            
-            # If no data is returned, we've hit the end of the table
-            if not chunk_data:
-                break
-                
-            all_data.extend(chunk_data)
-            print(f"Fetched rows {start_index} to {start_index + len(chunk_data) - 1}")
-            
-            # Move the window forward for the next loop
-            start_index += chunk_size
-            
-            # If the chunk returned is smaller than 1000, it was the final page
-            if len(chunk_data) < chunk_size:
-                break
-                
-        except APIError as e:
-            print(f"Supabase API Error during pagination: {e.message} (Code: {e.code})")
-            raise e
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
-            raise e
-            
-    print(f"Successfully fetched all {len(all_data)} rows from '{table_name}'.")
-    return all_data
-
-def export_csv():
-    recs = GET("Records", "Maps(*), Players(pid, name), time, rank")
-    pd.json_normalize(recs, sep='_').to_csv("rec_export.csv", index=False)
 
 if __name__ == "__main__":
-    # Load variables from .env into system environment
-    load_dotenv()
-
-    # Replace with your actual project keys from Supabase dashboard
-    SUPABASE_URL = os.getenv("SUPABASE_URL")
-    SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") # Use service role if bypasses RLS is needed for backend
-
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-    print("Starting scraper...")
     scrape()
-    print("Scraping completed. Now updating the database...")
-    update_players(read_json("players.json"))
-    update_recs(read_json("map_recs.json"))
-    print("Database update completed.")
-    print("Exporting to CSV")
-    export_csv()
-    print("Export completed.")
-
