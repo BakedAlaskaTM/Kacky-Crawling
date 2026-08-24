@@ -96,14 +96,14 @@ def cut_extra_recs(recs: list, recheck_players: set, records_dict: dict):
     prev_time = ""
     prev_pid = ""
     for rec in recs:
-        records_dict[f"{rec["map_id"]}+{rec["player_id"]}"] = rec
+        records_dict[f"{rec['map_id']}+{rec['player_id']}"] = rec
         if parse_time(rec["time"]) == parse_time(prev_time):
             recheck_players.add(rec["player_id"])
-            records_dict[f"{rec["map_id"]}+{rec["player_id"]}"]["rank"] = 11
+            records_dict[f"{rec['map_id']}+{rec['player_id']}"]["rank"] = 11
             recheck_players.add(prev_pid)
-            records_dict[f"{rec["map_id"]}+{prev_pid}"]["rank"] = 11
+            records_dict[f"{rec['map_id']}+{prev_pid}"]["rank"] = 11
         elif ptr >= 10:
-            del records_dict[f"{rec["map_id"]}+{rec["player_id"]}"]
+            del records_dict[f"{rec['map_id']}+{rec['player_id']}"]
             return
         prev_time = rec["time"]
         prev_pid = rec["player_id"]
