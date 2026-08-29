@@ -192,7 +192,7 @@ def scrape():
 def insert_map_data(map_data):
     # Insert the map data into the 'Maps' table
     try:
-        supabase.table('Maps').insert(map_data).execute()
+        supabase.table('KackyMaps').insert(map_data).execute()
     except APIError as e:
         # This is how you access the actual HTTP status code and message!
         print(f"Error Code: {e.code}")        # e.g., '42501' (Postgres error code)
@@ -201,7 +201,7 @@ def insert_map_data(map_data):
 def update_map_data(map_data):
     # Update the player data in the 'Players' table
     try:
-        supabase.table('Maps').upsert(map_data, on_conflict='uid').execute()
+        supabase.table('KackyMaps').upsert(map_data, on_conflict='uid').execute()
     except APIError as e:
         # This is how you access the actual HTTP status code and message!
         print(f"Error Code: {e.code}")        # e.g., '42501' (Postgres error code)
@@ -219,7 +219,7 @@ def insert_player_data(player_data):
 def insert_records_data(recs_data):
     # Insert the records data into the 'Records' table
     try:
-        supabase.table('Records').insert(recs_data).execute()
+        supabase.table('KackyRecords').insert(recs_data).execute()
     except APIError as e:
         # This is how you access the actual HTTP status code and message!
         print(f"Error Code: {e.code}")        # e.g., '42501' (Postgres error code)
@@ -236,7 +236,7 @@ def update_players(player_data):
 
 def update_recs(recs_data):
     try:
-        supabase.table('Records').upsert(recs_data, on_conflict='rank,map_id').execute()
+        supabase.table('KackyRecords').upsert(recs_data, on_conflict='rank,map_id').execute()
     except APIError as e:
         print(f"Error Code: {e.code}")        # e.g., '42501' (Postgres error code)
         print(f"Message: {e.message}")
@@ -291,7 +291,7 @@ def GET(table_name, columns='*'):
     return all_data
 
 def export_csv():
-    recs = GET("Records", "Maps(*), Players(pid, name), time, rank")
+    recs = GET("KackyRecords", "KackyMaps(*), Players(pid, name), time, rank")
     pd.json_normalize(recs, sep='_').to_csv("rec_export.csv", index=False)
 
 if __name__ == "__main__":
